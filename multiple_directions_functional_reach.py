@@ -203,8 +203,8 @@ if uploaded_file is not None and display_button:
     scatter_layout = go.Layout(
         title='重心位移三维散点图',
         scene=dict(
-            xaxis=dict(title='高低 (m)'),
-            yaxis=dict(title='左右 (m)'),
+            xaxis=dict(title='左右 (m)'),
+            yaxis=dict(title='高低 (m)'),
             zaxis=dict(title='前后 (m)'),
             aspectmode='cube',
             camera=dict(
