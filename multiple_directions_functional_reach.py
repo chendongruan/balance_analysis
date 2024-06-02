@@ -3,10 +3,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
+from matplotlib.font_manager import FontProperties
 import plotly.graph_objs as go
 
 # 设置中文字体
-rcParams['font.sans-serif'] = ['SimHei']  # 使用黑体
+# 确保字体文件路径正确
+font_path = "SimHei.ttf"
+font_prop = FontProperties(fname=font_path)
+rcParams['font.sans-serif'] = [font_prop.get_name()]
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # Streamlit 应用程序标题
