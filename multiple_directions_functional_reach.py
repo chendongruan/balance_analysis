@@ -163,6 +163,7 @@ if uploaded_file is not None and display_button:
     # 绘制雷达图
     ax.fill(angles, values, color='red', alpha=0.25)
     ax.plot(angles, values, color='red', linewidth=2)
+
     
     # 设置极轴标签
     ax.set_ylim(0, max_displacement)
@@ -178,16 +179,9 @@ if uploaded_file is not None and display_button:
     # 显示各个方向的最大位移值
     for i, value in enumerate(values[:-1]):
         angle_rad = angles[i]
-        ax.text(angle_rad, value -0.02, f"{value:.2f} m", ha='center', va='center')
+        ax.text(angle_rad, value -0.01, f"{value:.2f} m", ha='center', va='center')
     
-    # 添加标签
-    categories_offset = ['右', '前', '左', '后']
-    label_offset = 10  # 标签偏移量
-    for label, angle in zip(categories_offset, angles[:-1]):
-        x = np.cos(angle) * (max_displacement + label_offset)  # 计算偏移后的x坐标
-        y = np.sin(angle) * (max_displacement + label_offset)  # 计算偏移后的y坐标
-        ax.annotate(label, (angle, max_displacement + label_offset), horizontalalignment='center', verticalalignment='center')
-   
+      
     # 在 Streamlit 中展示图像
     st.pyplot(fig)
     
