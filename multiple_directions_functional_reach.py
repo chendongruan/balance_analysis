@@ -177,7 +177,7 @@ if uploaded_file is not None and display_button:
         ax.text(angle_rad, value -0.02, f"{value:.2f} m", ha='center', va='center')
     
     # 添加标签
-    categories_offset = ['向右', '向前', '向左', '向后']
+    categories_offset = ['右', '前', '左', '后']
     label_offset = 10  # 标签偏移量
     for label, angle in zip(categories_offset, angles[:-1]):
         x = np.cos(angle) * (max_displacement + label_offset)  # 计算偏移后的x坐标
