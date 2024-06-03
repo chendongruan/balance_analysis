@@ -14,7 +14,7 @@ rcParams['font.sans-serif'] = [font_prop.get_name()]
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # Streamlit 应用程序标题
-st.title('多方向平衡功能评估')
+st.title('Chendong-多方向平衡功能评估')
 
 # 用户输入部分
 st.sidebar.header('OpenCap信息输入')
