@@ -23,6 +23,27 @@ uploaded_file = st.sidebar.file_uploader("trc文件位于MarkerData文件夹里�
 # 展示和重置按钮并排放置
 display_button = st.sidebar.button("展示")
 
+# 添加框框来写注意事项
+st.sidebar.markdown("""
+<style>
+.box {
+    border: 2px solid red;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+</style>
+<div class="box">
+    <h4>OpenCap拍摄注意事项</h4>
+    <ul>
+        <li>保证被拍摄对象完整出现在画面中。</li>
+        <li>拍摄时尽量避免背景杂乱。</li>
+        <li>平衡功能测试需让受试者在测试体位保持静止姿势(推荐采取受试者双脚并拢的体位)，再开始Opencap数据采集。</li>
+        <li>在Opencap数据采集开始之后，受试者需保持3秒以上的静止姿势再开始平衡功能测试。</li>
+        <li>在Opencap数据采集完成之前，受试者都需要保持双足不能离地。</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
+
 # 处理上传的文件
 if uploaded_file is not None and display_button:
     # 读取文件的所有行
@@ -93,10 +114,10 @@ if uploaded_file is not None and display_button:
     Mid_r_foot = ((joint_data['RBigToe'].values + joint_data['RSmallToe'].values) / 2 + joint_data['RHeel'].values) / 2
 
     # 两脚中点作为原点
-    origin = np.mean((Mid_r_foot[10:30, :] + Mid_l_foot[10:30, :]) / 2, axis=0)
+    origin = np.mean((Mid_r_foot[30:60, :] + Mid_l_foot[30:60, :]) / 2, axis=0)
 
     # 计算X轴：从右脚指向左脚
-    X_axis = np.mean(Mid_l_foot[10:30, :] - Mid_r_foot[10:30, :], axis=0)
+    X_axis = np.mean(Mid_l_foot[30:60, :] - Mid_r_foot[30:60, :], axis=0)
     X_axis = X_axis / np.linalg.norm(X_axis)  # 规范化X轴
 
     # 使X轴与地面平行，正交化X轴（Gram-Schmidt过程）
@@ -105,7 +126,7 @@ if uploaded_file is not None and display_button:
     X_axis = X_axis / np.linalg.norm(X_axis)
 
     # 计算Y轴：从脚中点指向髋中点
-    Y_axis = np.mean(joint_data['midHip'].values[10:30, :], axis=0) - origin
+    Y_axis = np.mean(joint_data['midHip'].values[30:60, :], axis=0) - origin
     Y_axis = Y_axis / np.linalg.norm(Y_axis)  # 规范化Y轴
 
     # 正交化Y轴（Gram-Schmidt过程）
@@ -135,8 +156,8 @@ if uploaded_file is not None and display_button:
     
     transformed_mass_df = pd.DataFrame(transformed_mass, columns=columns_transformed)
     
-    # 提取第20到第40行数据的平均值作为重心的初始位置
-    initial_position = transformed_mass_df.iloc[19:40].mean()
+    # 提取第30到第60行数据的平均值作为重心的初始位置
+    initial_position = transformed_mass_df.iloc[29:60].mean()
     
     # 计算各个方向的最大位移值，减去重心的初始位置，并求其绝对值
     max_left = abs(transformed_mass_df['左右'].max() - initial_position['左右'])    # 最大左位移
@@ -152,8 +173,8 @@ if uploaded_file is not None and display_button:
     values = [abs(max_right), abs(max_forward), max_left, abs(max_backward)]
     
     # 创建绘图区域
-    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-    
+    fig, ax = plt.subplots(figsize=(6, 6),dpi=100, subplot_kw=dict(polar=True))
+
     # 角度计算
     angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
     
@@ -185,8 +206,10 @@ if uploaded_file is not None and display_button:
   
     # 叠加足印图像
     footprint_img = plt.imread('./footprint.png')  # 替换为你的足印图像路径
-    imagebox = OffsetImage(footprint_img, zoom=0.3, alpha=0.5)  # 调整zoom和alpha参数
-    ab = AnnotationBbox(imagebox, (0.5, 0.55), frameon=False, xycoords='axes fraction')
+    picture_ratio=(abs(max_forward)+abs(max_backward))/(abs(max_displacement)*2)
+    
+    imagebox = OffsetImage(footprint_img, zoom=0.57*picture_ratio, alpha=0.5)  # 调整zoom和alpha参数
+    ab = AnnotationBbox(imagebox, (0.5, 0.75-(abs(max_backward)/abs(max_forward))*0.25), frameon=False, xycoords='axes fraction')
     ax.add_artist(ab)
       
     # 在 Streamlit 中展示图像
