@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib.font_manager import FontProperties
 import plotly.graph_objs as go
-
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 # 设置中文字体
 # 确保字体文件路径正确
 font_path = "SimHei.ttf"
@@ -17,8 +17,8 @@ rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 st.title('多方向平衡功能评估')
 
 # 用户输入部分
-st.sidebar.header('信息输入')
-uploaded_file = st.sidebar.file_uploader("Opencap数据上传", type=["trc"])
+st.sidebar.header('OpenCap信息输入')
+uploaded_file = st.sidebar.file_uploader("trc文件位于MarkerData文件夹里。", type=["trc"])
 
 # 展示和重置按钮并排放置
 display_button = st.sidebar.button("展示")
@@ -146,8 +146,9 @@ if uploaded_file is not None and display_button:
     
     # 计算四个方向的最大位移绝对值
     max_displacement = max(max_left, max_right, max_forward, max_backward)    
+    
     # 准备数据
-    categories = ['向右', '向前', '向左', '向后']
+    categories = ['Rightside', 'Forward', 'leftside', 'Backward']
     values = [abs(max_right), abs(max_forward), max_left, abs(max_backward)]
     
     # 创建绘图区域
@@ -170,7 +171,8 @@ if uploaded_file is not None and display_button:
     ax.set_yticklabels([])
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(categories)
-
+    
+        
     # 在顶点位置绘制小圆圈
     for i, value in enumerate(values[:-1]):
         angle_rad = angles[i]
@@ -180,48 +182,21 @@ if uploaded_file is not None and display_button:
     for i, value in enumerate(values[:-1]):
         angle_rad = angles[i]
         ax.text(angle_rad, value -0.01, f"{value:.2f} m", ha='center', va='center')
-    
+  
+    # 叠加足印图像
+    footprint_img = plt.imread('balance_analysis/footprint.png')  # 替换为你的足印图像路径
+    imagebox = OffsetImage(footprint_img, zoom=0.3, alpha=0.5)  # 调整zoom和alpha参数
+    ab = AnnotationBbox(imagebox, (0.5, 0.55), frameon=False, xycoords='axes fraction')
+    ax.add_artist(ab)
       
     # 在 Streamlit 中展示图像
     st.pyplot(fig)
     
-    st.write('该图像展示重心相对于初始位置在各方向上的最大位移。')
     
-    # 准备三维散点图数据
-    scatter_data = go.Scatter3d(
-        x=transformed_mass_df['左右'],
-        y=transformed_mass_df['高低'],
-        z=transformed_mass_df['前后'],
-        mode='markers',
-        marker=dict(size=3, color='black'),
-        text=["高低: {:.4f} m<br>左右: {:.4f} m<br>前后: {:.4f} m".format(row['高低'], row['左右'], row['前后']) for index, row in transformed_mass_df.iterrows()],
-        hoverinfo='text'
-    )
-
-    scatter_layout = go.Layout(
-        title='重心位移三维散点图',
-        scene=dict(
-            xaxis=dict(title='左右 (m)'),
-            yaxis=dict(title='高低 (m)'),
-            zaxis=dict(title='前后 (m)'),
-            aspectmode='cube',
-            camera=dict(
-                eye=dict(x=1.25, y=1.25, z=1.25)
-            )
-        ),
-        margin=dict(l=0, r=0, b=0, t=40)
-    )
-
-    scatter_fig = go.Figure(data=[scatter_data], layout=scatter_layout)
-
-    # 在 Streamlit 中展示三维散点图
-    st.plotly_chart(scatter_fig)
-    st.write('该图像可通过鼠标调整观察角度，该坐标的原点定义是双足中点为空间原点，每一个散点对应的是该时刻重心在该坐标系下的位置，对于数值正负的定义是“相对原点在前数值为正，在后数值为负；在左数值为正，在右数值为负；在上数值为正，在下数值为负”。')
-    # 显示最大位移信息
     st.markdown(
         """
         <div style="border: 2px solid green; padding: 10px; border-radius: 10px;">
-            <h3>相对于双足中点的各方向最大位移信息</h3>
+            <h3>相对于初始重心的各方向最大位移信息</h3>
             <div style="display: flex; justify-content: space-around;">
                 <div>向前最大位移:<br>{:.4f} m</div>
                 <div>向后最大位移:<br>{:.4f} m</div>
@@ -234,3 +209,39 @@ if uploaded_file is not None and display_button:
         """.format(max_forward, abs(max_backward), max_left, abs(max_right)),
         unsafe_allow_html=True
     )
+    
+    # 准备三维散点图数据
+    scatter_data = go.Scatter3d(
+        x=transformed_mass_df['左右'],
+        y=transformed_mass_df['高低'],
+        z=transformed_mass_df['前后'],
+        mode='markers',
+        marker=dict(size=3, color='blue'),
+        text=["高低: {:.4f} m<br>左右: {:.4f} m<br>前后: {:.4f} m".format(row['高低'], row['左右'], row['前后']) for index, row in transformed_mass_df.iterrows()],
+        hoverinfo='text'
+    )
+
+
+
+
+    scatter_layout = go.Layout(
+        title='重心位移三维散点图',
+        scene=dict(
+            xaxis=dict(title='左右 (m)', range=[transformed_mass_df['左右'].min(), transformed_mass_df['左右'].max()]),
+            yaxis=dict(title='高低 (m)', range=[transformed_mass_df['高低'].min(), transformed_mass_df['高低'].max()]),
+            zaxis=dict(title='前后 (m)', range=[transformed_mass_df['前后'].min(), transformed_mass_df['前后'].max()]),
+            aspectmode='cube',
+            camera=dict(
+                eye=dict(x=0, y=2, z=0)
+            )
+        ),
+        margin=dict(l=0, r=0, b=0, t=40)
+    )
+    
+    scatter_fig = go.Figure(data=[scatter_data], layout=scatter_layout)
+
+    # 在 Streamlit 中展示三维散点图
+    st.plotly_chart(scatter_fig)
+    st.write('该图像可通过鼠标调整观察角度，该坐标的原点定义是双足中点为空间原点，每一个散点对应的是该时刻重心在该坐标系下的位置，对于数值正负的定义是“相对原点在前数值为正，在后数值为负；在左数值为正，在右数值为负；在上数值为正，在下数值为负”。')
+    # 显示最大位移信息
+
