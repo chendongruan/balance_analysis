@@ -184,7 +184,7 @@ if uploaded_file is not None and display_button:
         ax.text(angle_rad, value -0.01, f"{value:.2f} m", ha='center', va='center')
   
     # 叠加足印图像
-    footprint_img = plt.imread('balance_analysis/footprint.png')  # 替换为你的足印图像路径
+    footprint_img = plt.imread('./footprint.png')  # 替换为你的足印图像路径
     imagebox = OffsetImage(footprint_img, zoom=0.3, alpha=0.5)  # 调整zoom和alpha参数
     ab = AnnotationBbox(imagebox, (0.5, 0.55), frameon=False, xycoords='axes fraction')
     ax.add_artist(ab)
