@@ -14,7 +14,24 @@ rcParams['font.sans-serif'] = [font_prop.get_name()]
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # Streamlit 应用程序标题
-st.title('Chendong-多方向平衡功能评估')
+st.title('多方向平衡功能评估')
+
+st.markdown("""
+<style>
+.green-box {
+    border: 2px solid green;
+    padding: 10px;
+    background-color: #eaffea;
+}
+</style>
+<div class="green-box">
+    <h4>参考文献</h4>
+    <ul>
+        <li>Xu, T., & Zhou, Y. (2018). Elders’ fall detection based on biomechanical features using depth camera. International journal of wavelets, multiresolution and information processing, 16(02), 1840005.</li>
+        <li>Ploof, G., Alqahtani, B., Alghamdi, F., Flynn, G., & Yang, C. X. (2017, November). Center of mass estimation using motion capture system. In 2017 IEEE 15th Intl Conf on Dependable, Autonomic and Secure Computing, 15th Intl Conf on Pervasive Intelligence and Computing, 3rd Intl Conf on Big Data Intelligence and Computing and Cyber Science and Technology Congress (DASC/PiCom/DataCom/CyberSciTech) (pp. 287-292). IEEE.</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 # 用户输入部分
 st.sidebar.header('OpenCap信息输入')
