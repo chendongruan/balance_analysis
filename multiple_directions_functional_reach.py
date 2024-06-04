@@ -250,13 +250,21 @@ def calculate_and_display(joint_data):
     )
     
     # 准备三维散点图数据
+    frames_per_second = 60
+    hover_text = [
+        "时间: {:.2f} 秒<br>高低: {:.4f} m<br>左右: {:.4f} m<br>前后: {:.4f} m".format(
+            index / frames_per_second, row['高低'], row['左右'], row['前后']
+        ) 
+        for index, row in transformed_mass_df.iterrows()
+    ]
+    
     scatter_data = go.Scatter3d(
         x=transformed_mass_df['左右'],
         y=transformed_mass_df['高低'],
         z=transformed_mass_df['前后'],
         mode='markers',
         marker=dict(size=3, color='blue'),
-        text=["高低: {:.4f} m<br>左右: {:.4f} m<br>前后: {:.4f} m".format(row['高低'], row['左右'], row['前后']) for index, row in transformed_mass_df.iterrows()],
+        text=hover_text,
         hoverinfo='text'
     )
 
