@@ -6,6 +6,7 @@ from matplotlib import rcParams
 from matplotlib.font_manager import FontProperties
 import plotly.graph_objs as go
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+
 # 设置中文字体
 # 确保字体文件路径正确
 font_path = "SimHei.ttf"
@@ -37,8 +38,11 @@ st.markdown("""
 st.sidebar.header('OpenCap信息输入')
 uploaded_file = st.sidebar.file_uploader("trc文件位于MarkerData文件夹里。", type=["trc"])
 
-# 展示和重置按钮并排放置
+# 展示按钮设置
 display_button = st.sidebar.button("展示")
+
+# 示例展示按钮设置
+test_display_button = st.sidebar.button("示例展示")
 
 # 添加框框来写注意事项
 st.sidebar.markdown("""
@@ -61,23 +65,15 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 处理上传的文件
-if uploaded_file is not None and display_button:
-    # 读取文件的所有行
-    lines = uploaded_file.readlines()
-    lines = [line.decode('utf-8') for line in lines]
-
+def process_data(data_lines):
     # 提取关节名称（忽略空白列）
-    joint_names = [name for name in lines[3].strip().split('\t')[2:] if name]
+    joint_names = [name for name in data_lines[3].strip().split('\t')[2:] if name]
     # 提取列名（忽略空白列）
-    columns = [col for col in lines[4].strip().split('\t') if col]
+    columns = [col for col in data_lines[4].strip().split('\t') if col]
 
     # 从第7行开始是数据
-    data_lines = lines[6:]
-
-    # 读取数据部分
     data = []
-    for line in data_lines:
+    for line in data_lines[6:]:
         if line.strip():
             data.append(line.strip().split('\t')[2:])  # 跳过前两个元素
 
@@ -95,6 +91,9 @@ if uploaded_file is not None and display_button:
         joint_columns = columns[i*3:i*3+3]
         joint_data[joint] = df[joint_columns]
 
+    return joint_data
+
+def calculate_and_display(joint_data):
     # 计算各个身体部分的质量
     Neck_mass = joint_data['Neck'].values * 0.0668
     Trunk_mass = ((joint_data['RShoulder'].values + joint_data['LShoulder'].values) / 2 + 
@@ -261,9 +260,6 @@ if uploaded_file is not None and display_button:
         hoverinfo='text'
     )
 
-
-
-
     scatter_layout = go.Layout(
         title='重心位移三维散点图',
         scene=dict(
@@ -285,3 +281,17 @@ if uploaded_file is not None and display_button:
     st.write('该图像可通过鼠标调整观察角度，该坐标的原点定义是双足中点为空间原点，每一个散点对应的是该时刻重心在该坐标系下的位置，对于数值正负的定义是“相对原点在前数值为正，在后数值为负；在左数值为正，在右数值为负；在上数值为正，在下数值为负”。')
     # 显示最大位移信息
 
+# 示例数据文件路径
+sample_file_path = './sample_data.trc'
+
+# 处理上传的文件或示例数据
+if uploaded_file is not None and display_button:
+    lines = uploaded_file.readlines()
+    lines = [line.decode('utf-8') for line in lines]
+    joint_data = process_data(lines)
+    calculate_and_display(joint_data)
+elif test_display_button:
+    with open(sample_file_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    joint_data = process_data(lines)
+    calculate_and_display(joint_data)
